@@ -93,7 +93,7 @@
                 const card = document.createElement('div');
                 card.classList =`card border`;
                 card.innerHTML = `
-                <figure><img src="${news?.image_url}" alt="news" /></figure>
+                <figure class="h-52 bg-gray-200"><img src="${news?.image_url}" alt="news" class="h-full w-fit"/></figure>
                 <div class="card-body">
                   <h2 class="card-title text-lg">
                     ${news?.title?.slice(0,50)}
@@ -132,7 +132,7 @@
             modal.innerHTML = `
             <dialog id="chill" class="modal">
             <form method="dialog" class="modal-box">
-                <figure><img src="${details?.image_url}" alt="news" /></figure>
+              <figure class="h-52 bg-gray-200"><img src="${details?.image_url}" alt="news" class="h-full w-fit"/></figure>
                 <div class="card-body">
                   <h2 class="card-title text-lg">
                     ${details?.title}

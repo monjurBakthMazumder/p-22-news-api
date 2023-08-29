@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- tailwind css and daisy ui cdn  -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.6.3/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>News</title>
+</head>
+<body>
+    <div class="fixed h-screen w-screen flex justify-center items-center z-50 bg-white bg-opacity-50" id="loading">
+            <span class="loading loading-spinner text-primary"></span>
+            <span class="loading loading-spinner text-secondary"></span>
+            <span class="loading loading-spinner text-accent"></span>
+            <span class="loading loading-spinner text-neutral"></span>
+            <span class="loading loading-spinner text-info"></span>
+            <span class="loading loading-spinner text-success"></span>
+            <span class="loading loading-spinner text-warning"></span>
+            <span class="loading loading-spinner text-error"></span>
+    </div>
+    <header>
+        <div class="tabs tabs-boxed  flex justify-center items-center gap-1 py-3" id="allTabs">
+        </div>
+    </header>
+    <main class="px-[10%]">
+        <div class="text-center text-2xl md:text-3xl font-bold underline my-10">
+            <h1>Total news: <span id="total">00</span></h1>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="newsContainer">
+        </div>
+        <div id="modalBox">
+
+        </div>
+        <div class="flex justify-center items-center text-4xl md:text-6xl font-bold my-20" id="noNews">
+            <h1>No News Available</h1>
+        </div>
+
+    </main>
+    <script>
+        const noNews = document.getElementById('noNews');
+        noNews.classList.add('hidden');
+        const loading = document.getElementById('loading');
+        const clickShowAll = false;
+        const showAll = document.getElementById('showAll');
+        const totalFiled = document.getElementById('total');
+        const total = Number(totalFiled.innerText);
+        const newsContainer = document.getElementById('newsContainer');
+        const loadCategory = async() => {
+            const res = await fetch(`https://openapi.programming-hero.com/api/news/categories`);
+            const data = await res.json();
+            const categories = data.data.news_category;
+            const allTabs = document.getElementById('allTabs');
+            categories.forEach(category => {
+                const a = document.createElement('a');
+                a.innerHTML =`
+                <a onclick="news('${category.category_id}')" class="tab border bg-primary text-white text-lg">${category.category_name}</a>
+                ` 
+                allTabs.appendChild(a);
+            });
+            loading.classList.add('hidden');
+        }
+        const news = async (id) => {
+            loading.classList.remove('hidden');
+            const res = await fetch(`https://openapi.programming-hero.com/api/news/category/${id}`);
+            const data = await res.json();
+            const allNews = data.data;
+            newsContainer.innerHTML = '';
+            totalFiled.innerText = allNews.length;
+            if(total == 0){
+                loading.classList.add('hidden');
+                noNews.classList.remove('hidden');
+            }
+            allNews.forEach(news=> {
+                const card = document.createElement('div');
+                card.classList =`card border`;
+                card.innerHTML = `
+                <figure><img src="${news?.image_url}" alt="news" /></figure>
+                <div class="card-body">
+                  <h2 class="card-title text-lg">
+                    ${news?.title?.slice(0,50)}
+                    <div class="badge badge-secondary p-4 ">${news?.rating?.badge}</div>
+                  </h2>
+                  <p>${news?.details?.slice(0,150)}</p>
+                  <p>Total views: ${news?.total_view ? news?.total_view : 'No view'}</p>
+                  <hr>
+                  <div class="flex justify-between items-center gap-2">
+                    <div class="flex-1 flex justify-start items-center gap-2">
+                        <div class="w-10">    
+                            <img src=${news?.author?.img} alt="" class="w-full rounded-full">
+                        </div>
+                        <div class="flex-1">
+                            <h1>${news?.author?.name}</h1>
+                            <p>${news?.author?.published_date}</p>
+                        </div>
+                    </div>
+                    <button onclick="details('${news._id}')" class="btn btn-primary">Details</button>
+                  </div>
+                </div>
+                `
+                newsContainer.appendChild(card);
+                loading.classList.add('hidden');
+            })
+        }
+        
+        const details = async(newsId) => {
+            loading.classList.remove('hidden');
+            const modalBox = document.getElementById('modalBox');
+            modalBox.innerText = '';
+            const res = await fetch(`https://openapi.programming-hero.com/api/news/${newsId}`);
+            const data = await res.json();
+            const details = data.data[0];
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+            <dialog id="chill" class="modal">
+            <form method="dialog" class="modal-box">
+                <figure><img src="${details?.image_url}" alt="news" /></figure>
+                <div class="card-body">
+                  <h2 class="card-title text-lg">
+                    ${details?.title}
+                    <div class="badge badge-secondary p-4 ">${details?.rating?.badge}</div>
+                  </h2>
+                  <p>${details?.details}</p>
+                  <p>Total views: ${details?.total_view ? details?.total_view : 'No view'}</p>
+                  <hr>
+                  <div class="flex justify-between items-center gap-2">
+                    <div class="flex-1 flex justify-start items-center gap-2">
+                        <div class="w-10">    
+                            <img src=${details?.author?.img} alt="" class="w-full rounded-full">
+                        </div>
+                        <div class="flex-1">
+                            <h1>${details?.author?.name}</h1>
+                            <p>${details?.author?.published_date}</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">cancel</button>
+                  </div>
+                </div>
+            </form>
+            </dialog>
+            `
+            modalBox.appendChild(modal);
+            chill.showModal();
+            loading.classList.add('hidden');
+        }
+        
+        news('08');
+        loadCategory();
+    </script>
+</body>
+</html>
